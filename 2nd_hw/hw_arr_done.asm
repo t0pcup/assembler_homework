@@ -27,9 +27,9 @@ start:
         call VectorInput
 ; 2) get vector min
         call VectorMin ; подготовка к проходу по массиву
-        call VectorMinLoop ; ищем минимум в цикле (ВОТ ТУТ ВСЕ ПЛОХО С ИФАМИ, СПАСАЙ)
+        call VectorMinLoop ; ищем минимум в цикле
         call VectorMin ; подготовка к проходу по массиву
-        call zeroVecLoop ; заменить 0 минимальным, тут вроде все ок
+        call zeroVecLoop ; заменить нули минимальным
 ; 3) out of min
         push [min]
         push strMinValue
@@ -89,8 +89,8 @@ getVecLoop:
         add ebx, 4
         jmp getVecLoop
 endInputVector:
-        mov ebx, vec ;KEKEKEKE
-        xor ecx, ecx ;KEKEKEK
+        mov ebx, vec
+        xor ecx, ecx
         ret
 ;--------------------------------------------------------------------------
 VectorMin:
@@ -106,8 +106,8 @@ VectorMinLoop:
         mov eax, 0
         cmp [ebx], eax ; если текущий эл-т больше или меньше 0, проверяем не первый ли он
 
-        jg firstMin ;kek1
-        jl firstMin ;kek2
+        jg firstMin
+        jl firstMin
 afterParty:
 
         mov ecx, [i]
@@ -118,18 +118,18 @@ afterParty:
         jmp VectorMinLoop
 
 firstMin:
-        cmp [min], 0 ;kek4 так проще
+        cmp [min], 0
         je newMin  ; если ненулевой элемент первый в массиве, берем его как минимум
         jmp checkForMin ; иначе проверяем, меньше ли он, чем текущий минимум
 checkForMin:
-        mov ecx, [ebx] ; kek5 [ebx] в регистр edi, чтобы видеть флаг
-        cmp ecx, [min] ; kek6 сравним с текущим минимумои
-        jb newMin      ; если после вычитания [min] в edi поднялся ZF, делаем [ebx] новым минимумом
-        jmp afterParty ; KEK
+        mov edi, [ebx] ; [ebx] в регистр edi, чтобы видеть флаг
+        cmp edi, [min] ; сравним с текущим минимумои
+        jl newMin      ; если после вычитания [min] в edi поднялся ZF, делаем [ebx] новым минимумом
+        jmp afterParty
 newMin:
         mov ecx, [ebx]
         mov [min], ecx
-        jmp afterParty ;KEK
+        jmp afterParty
 zeroVecLoop:
         mov [tmp], ebx
         cmp ecx, [vec_size]
