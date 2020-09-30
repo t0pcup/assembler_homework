@@ -1,3 +1,5 @@
+; вариант 15: ћассив B из... с заменой всех нулевых элементов значением минимального
+
 format PE console
 entry start
 
@@ -6,19 +8,23 @@ include 'win32a.inc'
 ;--------------------------------------------------------------------------
 section '.data' data readable writable
 
-        strVecSize   db 'size of vector? ', 0
-        strIncorSize db 'Incorrect size of vector = %d', 10, 0
-        strVecElemI  db '[%d]? ', 0
-        strScanInt   db '%d', 0
-        strMinValue  db 'Min = %d', 10, 0
+        strVecSize     db 'size of vector: ', 0
+        strIncorSize   db 'Incorrect size of vector = %d', 10, 0
+        strVecElemI    db '[%d]? ', 0
+        strScanInt     db '%d', 0
+        strMinValue    db 'Min = %d', 10, 0
+        strBVec        db '---B---', 10, 0
         strVecElemOut  db '[%d] = %d', 10, 0
 
         vec_size     dd 0
         min          dd 0
         i            dd ?
+        i_b            dd ?
         tmp          dd ?
+        tmp_b          dd ?
         tmpStack     dd ?
         vec          rd 100
+        vecB          rd 100
 
 ;--------------------------------------------------------------------------
 section '.code' code readable executable
@@ -28,13 +34,19 @@ start:
 ; 2) get vector min
         call VectorMin ; подготовка к проходу по массиву
         call VectorMinLoop ; ищем минимум в цикле
+; 3) replacing zeros
         call VectorMin ; подготовка к проходу по массиву
         call zeroVecLoop ; заменить нули минимальным
-; 3) out of min
+; 4)
+; 4) out of min
         push [min]
         push strMinValue
         call [printf]
-; 4) test vector out
+; 5) out of B Vector
+        push strBVec
+        call [printf]
+
+; 6) test vector out
         call VectorOut
 finish:
         call [getch]
@@ -60,6 +72,7 @@ VectorInput:
         push vec_size
         push strIncorSize
         call [printf]
+        call [getch]
         push 0
         call [ExitProcess]
 ; else continue...
