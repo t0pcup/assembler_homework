@@ -9,6 +9,7 @@
 #include <string>
 #include <mutex>
 #include <chrono>
+#include <random>
 
 using namespace std;
 
@@ -16,7 +17,7 @@ constexpr int LEN_S = 10, LEN_D = 15;
 
 char *solo;
 pair<char, char> *duet;
-int last_solo = -1, madam = -1, sir = -1;
+int last_solo = -1, madam = -1, sir = -1, gone = 0;
 mutex mem;
 
 int place_to_duet(bool lady) {
@@ -24,7 +25,8 @@ int place_to_duet(bool lady) {
     char guest = lady ? 'w' : 'm';
 
     if (last == -1) {
-        if (++last == opp) ++last;
+        ++last;
+        while (duet[last].second != 'n' || last == opp) ++last;
 
         duet[last].first = guest;
     } else {
@@ -43,6 +45,9 @@ int place_to_duet(bool lady) {
 
 void occupy_s(const string &person) {
     if (last_solo >= LEN_S - 1) {
+        mem.lock();
+        ++gone;
+        mem.unlock();
         cout << person + " left the hotel... [manager id: " << this_thread::get_id() << "]\n";
         return;
     }
@@ -68,7 +73,8 @@ void visitor(const string &person) {
     cout << person + " came to the hotel! ";
     int last = person[0] == 'L' ? madam : sir, opp = person[0] != 'L' ? madam : sir;
 
-    last < LEN_D && duet[LEN_D - 1].second == 'n' && opp != 14 ? occupy_d(person) : occupy_s(person);
+    last < LEN_D && (duet[LEN_D - 1].second == 'n' && opp != 14 || duet[last].second == 'n') ?
+    occupy_d(person) : occupy_s(person);
 }
 
 void info() {
@@ -87,13 +93,17 @@ void info() {
 
     for (int i = 7; i < LEN_D - 1; ++i)
         cout << "| " << duet[i].first << ' ' << duet[i].second << ' ';
-    cout << "|\t| " << duet[14].first << ' ' << duet[14].second << " |\n\n";
+    cout << "|\t| " << duet[14].first << ' ' << duet[14].second << " |\n"
+         << "Guests who left the hotel: " << gone << "\n\n";
 
 }
 
 void queue() {
+    random_device rd;
+    mt19937 mersenne(rd());
+
     while (solo[LEN_S - 1] == 'n' || duet[LEN_D - 1].second == 'n') {
-        auto t = new thread(visitor, rand() % 2 == 0 ? "Lady" : "Gentleman");
+        auto t = new thread(visitor, mersenne() % 2 == 0 ? "Lady" : "Gentleman");
         this_thread::sleep_for(0.27s);
 //        info();
         t->join();
